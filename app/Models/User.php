@@ -17,11 +17,16 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    public $timestamps = false;
     protected $fillable = [
-        'name',
-        'email',
+        'ho_ten',
+        'username',
         'password',
+        'SDT',
+        'promo_start',
+        'promo_end',
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -45,4 +50,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
 }
