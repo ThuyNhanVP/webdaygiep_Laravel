@@ -54,7 +54,7 @@
 
     <div class="nothing"></div>
 
-    <!-- <div class="boxlogin">
+    <div class="boxlogin">
         @auth
             <span style="margin-right: 10px; margin-top: 6px; font-weight: bold; color: green;">
                 Xin chào, {{ Auth::user()->ho_ten }}
@@ -68,7 +68,7 @@
             <a href="{{ route('login') }}"><button>LOGIN</button></a>
             <a href="{{ route('cart.index') }}"><button>GIỎ HÀNG</button></a>
         @endauth
-    </div> -->
+    </div>
 
     <div class="product">
         @foreach($products as $row)
