@@ -90,12 +90,12 @@
                 @if(!empty($row->tag))
                     <p style="font-weight: bold; display: inline; margin-right: 70px;">{{ $row->tag }}</p>
                 @endif
-                <!-- <form method="POST" action="{{ route('cart.add') }}" style="display: inline;">
+                <form method="POST" action="{{ route('cart.add') }}" style="display: inline;">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $row->id }}">
                     <input type="hidden" name="so_luong" value="1">
                     <button type="submit">Thêm vào giỏ hàng</button>
-                </form> -->
+                </form>
             </div>
         </div>
         @endforeach
