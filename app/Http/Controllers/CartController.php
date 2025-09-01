@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Product;
 
 class CartController extends Controller
 {
@@ -41,20 +42,58 @@ class CartController extends Controller
             'msg' => $msg ?? null,
         ]);
     }
-
     // Thêm sản phẩm vào giỏ
     public function add(Request $request)
     {
+        $product = Product::findOrFail($request->product_id);
+
+        // Lấy giỏ hàng hiện tại từ session
         $cart = Session::get('cart', []);
-        $cart[] = [
-            'product_id' => $request->product_id,
-            'so_luong' => $request->so_luong ?? 1
-        ];
+
+        // Nếu sản phẩm đã có thì tăng số lượng
+        if (isset($cart[$product->id])) {
+            $cart[$product->id]['so_luong'] += $request->so_luong ?? 1;
+        } else {
+            // Nếu chưa có thì thêm mới
+            $cart[$product->id] = [
+                'product_id' => $product->id,
+                'ten_san_pham' => $product->ten_san_pham,
+                'gia' => $product->gia,
+                'so_luong' => $request->so_luong ?? 1,
+                'anh' => $product->anh ?? null, // nếu có ảnh sản phẩm
+            ];
+        }
+
+        // Lưu lại giỏ hàng
         Session::put('cart', $cart);
         Session::put('cart_open_time', time());
 
-        return redirect()->route('cart.index');
+        // Nếu là request AJAX thì trả JSON
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Sản phẩm đã được thêm vào giỏ hàng!',
+                'cart_count' => count($cart),
+            ]);
+        }
+
+        // Nếu không phải AJAX
+        return redirect()->route('cart.index')->with('msg', 'Đã thêm sản phẩm vào giỏ hàng!');
     }
+
+    // Xoá sản phẩm khỏi giỏ
+    public function remove($id)
+    {
+        $cart = Session::get('cart', []);
+
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            Session::put('cart', $cart);
+        }
+
+        return back()->with('msg', 'Đã xoá sản phẩm khỏi giỏ hàng!');
+    }
+
 
     // Xác nhận đơn hàng
     public function checkout(Request $request)
@@ -69,8 +108,7 @@ class CartController extends Controller
         // Lưu đơn hàng
         $don_hang_id = DB::table('don_hang')->insertGetId([
             'user_id' => $user_id,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'ngay_tao' => now(),
         ]);
 
         // Lưu chi tiết đơn hàng
@@ -79,8 +117,7 @@ class CartController extends Controller
                 'don_hang_id' => $don_hang_id,
                 'product_id' => $item['product_id'],
                 'so_luong' => $item['so_luong'] ?? 1,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'ngay_tao' => now(),
             ]);
         }
 

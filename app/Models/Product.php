@@ -11,4 +11,5 @@ class Product extends Model
         'name', 'price', 'category', 'colors', 'tag', 'image_main', 'image_hover'
     ];
     public $timestamps = false; // nếu bảng không có created_at, updated_at
+    
 }

@@ -1,36 +1,79 @@
 @extends('layouts.app')
 
+@section('title', 'Giỏ hàng')
+
 @section('content')
-<h2>Giỏ hàng</h2>
+<div class="max-w-4xl mx-auto my-10 p-6 bg-white rounded-2xl shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">🛒 Giỏ hàng của bạn</h2>
 
-@if($msg)
-    <p style="color:red;font-weight:bold;">{{ $msg }}</p>
-@endif
+    @if($msg)
+        <div class="mb-4 p-3 rounded-lg bg-red-100 text-red-700 font-medium">
+            {{ $msg }}
+        </div>
+    @endif
 
-<ul>
     @forelse($products as $p)
-        <li>{{ $p->name }} - {{ number_format($p->price,0,',','.') }} VND x {{ $p->so_luong }}</li>
+        <div class="flex items-center justify-between border-b border-gray-200 py-4">
+            <div class="flex items-center gap-4">
+                {{-- Ảnh sản phẩm (nếu có cột image trong DB) --}}
+                <img src="{{ $p->image_url ?? asset('images/no-image.png') }}" 
+                     alt="{{ $p->name }}" 
+                     class="w-16 h-16 object-cover rounded-lg border">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-700">{{ $p->name }}</h4>
+                    <p class="text-gray-500">{{ number_format($p->price,0,',','.') }} VND</p>
+                    <p class="text-sm text-gray-600">Số lượng: 
+                        <span class="font-semibold">{{ $p->so_luong }}</span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <div class="font-bold text-gray-800">
+                    {{ number_format($p->price * $p->so_luong,0,',','.') }} VND
+                </div>
+                {{-- Nút xoá sản phẩm --}}
+                <form method="POST" action="{{ route('cart.remove', $p->id) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" 
+                        class="text-red-500 hover:text-red-700 text-sm font-medium">
+                        ❌ Xoá
+                    </button>
+                </form>
+            </div>
+        </div>
     @empty
-        <li>Giỏ hàng trống</li>
+        <p class="text-center text-gray-500 italic">Giỏ hàng trống</p>
     @endforelse
-</ul>
 
-@if(count($products) > 0)
-    <div style="margin-top:20px;font-weight:bold;">
-        Tổng tiền đơn hàng: {{ number_format($totalPrice,0,',','.') }} VND
+    @if(count($products) > 0)
+        <div class="mt-6 text-right">
+            <p class="text-lg font-bold text-gray-800">Tổng tiền: 
+                <span class="text-green-600">{{ number_format($totalPrice,0,',','.') }} VND</span>
+            </p>
+
+            <form method="POST" action="{{ route('cart.checkout') }}" class="mt-4">
+                @csrf
+                <button type="submit" 
+                    class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-md transition">
+                    Xác nhận đơn hàng
+                </button>
+            </form>
+
+            <div class="mt-3 text-sm text-gray-600">
+                ⏳ Thời gian còn lại: 
+                <span id="countdown" class="font-semibold text-red-500">{{ $time_left }}</span> giây
+            </div>
+        </div>
+    @endif
+
+    <div class="mt-6 text-center">
+        <a href="{{ route('home') }}" 
+           class="inline-block px-5 py-2 rounded-lg border border-blue-500 text-blue-600 font-medium hover:bg-blue-50 transition">
+            ⬅ Quay lại mua sắm
+        </a>
     </div>
-
-    <form method="POST" action="{{ route('cart.checkout') }}">
-        @csrf
-        <button type="submit">Xác nhận đơn hàng</button>
-    </form>
-
-    <div class="timer">
-        Thời gian còn lại: <span id="countdown">{{ $time_left }}</span> giây
-    </div>
-@endif
-
-<a href="{{ route('home') }}">Quay lại mua sắm</a>
+</div>
 
 <script>
 let timeLeft = {{ $time_left }};
