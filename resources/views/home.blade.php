@@ -61,6 +61,9 @@
             <span style="margin-right: 10px; margin-top: 6px; font-weight: bold; color: green;">
                 Xin chào, {{ Auth::user()->ho_ten }}
             </span>
+            @if(Auth::user()->role === 'admin')
+                <a href="{{ route('admin.dashboard') }}"><button>QUẢN TRỊ</button></a>
+            @endif
             <a href="{{ route('cart.index') }}"><button>GIỎ HÀNG</button></a>
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf

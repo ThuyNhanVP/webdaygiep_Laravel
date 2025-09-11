@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Laravel App')</title>
+    <title>@yield('title', 'G4 Plus')</title>
     <!-- Tailwind qua CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
