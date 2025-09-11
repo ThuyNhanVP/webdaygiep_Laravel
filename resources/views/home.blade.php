@@ -49,7 +49,7 @@
     <div class="menu">
         <ul>
             <li><a href="{{ route('home') }}">TRANG CHỦ</a></li>
-            <li><a href="{{ asset('Cv_TranNguyenThuyNhan_PHP.pdf') }}">GIỚI THIỆU</a></li>
+            <li><a href="#">GIỚI THIỆU</a></li>
             <li><a href="#">LIÊN HỆ</a></li>
         </ul>
     </div>
