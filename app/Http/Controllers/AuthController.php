@@ -69,7 +69,7 @@ class AuthController extends Controller
 
     return response()->json([
         'success' => true,
-        'message' => 'Đăng ký thành công và đã đăng nhập!'
+        'message' => 'Đăng ký thành công đang chuyển sang đăng nhập!'
     ]);
 }
 
