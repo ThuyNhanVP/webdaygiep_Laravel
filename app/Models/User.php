@@ -27,6 +27,11 @@ class User extends Authenticatable
         'promo_end',
     ];
 
+    // Một user có nhiều đơn hàng
+    public function donHang()
+    {
+        return $this->hasMany(DonHang::class, 'user_id', 'id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

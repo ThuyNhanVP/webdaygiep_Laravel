@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\ChiTietDonHang;
 
 class DonHang extends Model
 {
@@ -11,6 +13,16 @@ class DonHang extends Model
 
     // tắt tự động thêm created_at và updated_at
     public $timestamps = false;
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function chiTietDonHang()
+    {
+        return $this->hasMany(ChiTietDonHang::class, 'don_hang_id', 'id');
+    }
 
     // nếu muốn chỉ định cột nào được phép insert/update
     protected $fillable = [

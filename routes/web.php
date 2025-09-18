@@ -24,6 +24,16 @@ Route::middleware('auth')->group(function() {
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 });
 
-Route::middleware(['auth', 'is_admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+// Khu vực admin
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
+    Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // Quản lý sản phẩm
+    Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
+    Route::post('/products/store', [AdminController::class, 'storeProduct'])->name('admin.products.store');
+    Route::post('/products/update/{id}', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    Route::delete('/products/delete/{id}', [AdminController::class, 'deleteProduct'])->name('admin.products.delete');
+
+    // Kiểm tra đơn hàng
+    Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
 });
