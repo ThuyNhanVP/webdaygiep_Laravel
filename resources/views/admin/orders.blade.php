@@ -17,6 +17,7 @@
                     <th class="px-6 py-3">Ngày tạo</th>
                     <th class="px-6 py-3">Sản phẩm</th>
                     <th class="px-6 py-3 text-center">Tổng SL</th>
+                    <th class="px-6 py-3 text-center">Tổng giá trị</th>
                 </tr>
             </thead>
             <tbody>
@@ -44,10 +45,13 @@
                         <td class="px-6 py-4 text-center font-bold text-gray-800">
                             {{ $don->chiTietDonHang->sum('so_luong') }}
                         </td>
+                        <td class="px-6 py-4 text-center font-bold text-green-600">
+                            {{ number_format($don->chiTietDonHang->sum(function($ct) { return $ct->so_luong * $ct->product->price; }), 0, ',', '.') }} VND
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-gray-400 text-base">
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-400 text-base">
                             Không có đơn hàng nào
                         </td>
                     </tr>
