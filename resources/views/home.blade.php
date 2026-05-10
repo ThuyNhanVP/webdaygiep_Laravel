@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>G4 Plus</title>
+    <title>G4 Sneaker</title>
     <link rel="stylesheet" href="{{ asset('css/stl.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -42,7 +42,7 @@
 
     <div class="header_label">
         <div class="logo">
-            <a href=""><img class="anh" src="{{ asset('img/log.png') }}" alt=""></a>
+            <a href=""><img class="anh" src="{{ asset('img/LogoV2.png') }}" alt=""></a>
         </div>
     </div>
 
@@ -109,8 +109,8 @@
         <div
             style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;">
             <div style="flex:1;min-width:200px;margin-bottom:20px;">
-                <h3 style="margin-bottom:10px;">G4 Plus</h3>
-                <p>© 2025 G4 Plus. All rights reserved.</p>
+                <h3 style="margin-bottom:10px;">G4 Sneaker</h3>
+                <p>© 2025 G4 Sneaker. All rights reserved.</p>
             </div>
             <div style="flex:1;min-width:200px;margin-bottom:20px;">
                 <h4 style="margin-bottom:10px;">Liên hệ</h4>
