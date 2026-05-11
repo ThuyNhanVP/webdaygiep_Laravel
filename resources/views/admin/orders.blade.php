@@ -1,63 +1,70 @@
 @extends('layouts.app')
-@section('title', 'Quan ly don hang')
 
 @section('content')
-<div class="container" style="max-width:1100px;margin:40px auto;padding:0 16px;">
-    <h2 style="margin-bottom:24px;">Tat ca don hang</h2>
-
-    @forelse($orders as $don)
-    <div style="border:1px solid #ddd;border-radius:8px;margin-bottom:24px;overflow:hidden;">
-        <div style="background:#f0f0f0;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;">
-            <span>
-                <strong>Don #{{ $don->id }}</strong> &mdash;
-                Khach: <b>{{ $don->user->ho_ten ?? '—' }}</b>
-                ({{ $don->user->SDT ?? '' }})
-            </span>
-            <span style="color:#777;font-size:0.9rem;">
-                {{ \Carbon\Carbon::parse($don->ngay_tao)->format('d/m/Y H:i') }}
-            </span>
-        </div>
-
-        <div style="padding:10px 20px;border-bottom:1px solid #eee;font-size:0.92rem;">
-            <strong>Dia chi nhan:</strong> {{ $don->dia_chi ?: '(Chua co)' }}
-        </div>
-
-        <div style="padding:16px 20px;">
-            <table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
-                <thead>
-                    <tr style="background:#fafafa;">
-                        <th style="padding:8px;text-align:left;border-bottom:1px solid #eee;">San pham</th>
-                        <th style="padding:8px;text-align:center;border-bottom:1px solid #eee;">Mau</th>
-                        <th style="padding:8px;text-align:center;border-bottom:1px solid #eee;">SL</th>
-                        <th style="padding:8px;text-align:right;border-bottom:1px solid #eee;">Don gia</th>
-                        <th style="padding:8px;text-align:right;border-bottom:1px solid #eee;">Thanh tien</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($don->chiTietDonHang as $ct)
-                    <tr>
-                        <td style="padding:8px;">{{ $ct->product->name ?? '(Da xoa)' }}</td>
-                        <td style="padding:8px;text-align:center;">{{ $ct->mau_chon ?? '—' }}</td>
-                        <td style="padding:8px;text-align:center;">{{ $ct->so_luong }}</td>
-                        <td style="padding:8px;text-align:right;">
-                            {{ number_format($ct->gia_tai_thoi_diem ?? optional($ct->product)->price ?? 0, 0, ',', '.') }} VND
-                        </td>
-                        <td style="padding:8px;text-align:right;">
-                            {{ number_format(($ct->gia_tai_thoi_diem ?? optional($ct->product)->price ?? 0) * $ct->so_luong, 0, ',', '.') }} VND
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <div style="padding:10px 20px;border-top:1px solid #eee;text-align:right;font-weight:700;">
-            Tong: {{ number_format($don->chiTietDonHang->sum(fn($ct) => ($ct->gia_tai_thoi_diem ?? optional($ct->product)->price ?? 0) * $ct->so_luong), 0, ',', '.') }} VND
-        </div>
+<div class="max-w-6xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            Danh sách đơn hàng
+        </h2>
     </div>
 
-    @empty
-        <p>Chua co don hang nao.</p>
-    @endforelse
+    <div class="overflow-hidden bg-white shadow-md rounded-2xl">
+        <table class="w-full text-sm text-left text-gray-600">
+            <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-3 text-center">Mã đơn</th>
+                    <th class="px-6 py-3">Khách hàng</th>
+                    <th class="px-6 py-3">Ngày tạo</th>
+                    <th class="px-6 py-3">Sản phẩm</th>
+                    <th class="px-6 py-3 text-center">Tổng SL</th>
+                    <th class="px-6 py-3 text-center">Tổng giá trị</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($orders as $don)
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-center font-semibold text-gray-800">
+                            #{{ $don->id }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ $don->user->ho_ten ?? '—' }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {{ \Carbon\Carbon::parse($don->ngay_tao)->format('d/m/Y H:i') }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <ul class="space-y-1">
+                                @foreach($don->chiTietDonHang as $ct)
+                                    <li class="flex items-center justify-between">
+                                        <span class="font-medium text-gray-700">{{ $ct->product->name }}</span>
+                                        <span class="text-gray-500">× {{ $ct->so_luong }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </td>
+                        <td class="px-6 py-4 text-center font-bold text-gray-800">
+                            {{ $don->chiTietDonHang->sum('so_luong') }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-bold text-green-600">
+                            {{ number_format($don->chiTietDonHang->sum(function($ct) { return $ct->so_luong * $ct->product->price; }), 0, ',', '.') }} VND
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-400 text-base">
+                            Không có đơn hàng nào
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ route('admin.dashboard') }}"
+           class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition">
+            ← Quay lại
+        </a>
+    </div>
 </div>
 @endsection

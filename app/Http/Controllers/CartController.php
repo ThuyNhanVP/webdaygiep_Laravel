@@ -3,144 +3,127 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 
 class CartController extends Controller
 {
+    // Xem giỏ hàng
     public function index()
     {
-        $cartData   = Session::get('cart', []);
-        $products   = [];
-        $totalPrice = 0;
+        $cart = Session::get('cart', []);
+        $cart_open_time = Session::get('cart_open_time', time());
+        $time_left = 30 - (time() - $cart_open_time);
 
-        foreach ($cartData as $item) {
-            $product = Product::where('id', $item['product_id'])->first();
-            if ($product) {
-                $product->so_luong      = $item['so_luong'] ?? 1;
-                $product->mau_da_chon   = $item['mau_chon'] ?? null;
-                $product->cart_key      = $item['product_id'] . '_' . ($item['mau_chon'] ?? '');
-                $products[]             = $product;
-                $totalPrice            += $product->price * $product->so_luong;
+        if ($time_left <= 0) {
+            Session::forget('cart');
+            Session::forget('cart_open_time');
+            $msg = "Giỏ hàng đã hết thời gian (30 giây) và được xóa!";
+            $products = [];
+        } else {
+            $products = [];
+            $totalPrice = 0;
+            foreach ($cart as $item) {
+                $product = DB::table('products')->where('id', $item['product_id'])->first();
+                if ($product) {
+                    $product->so_luong = $item['so_luong'] ?? 1;
+                    $products[] = $product;
+                    $totalPrice += $product->price * $product->so_luong;
+                }
             }
         }
-
-        $promo_end = DB::table('users')->where('id', Auth::id())->value('promo_end');
-        $time_left = $promo_end ? (strtotime($promo_end) - time()) : 0;
 
         return view('cart.index', [
-            'products'   => $products ?? [],
+            'products' => $products ?? [],
             'totalPrice' => $totalPrice ?? 0,
-            'time_left'  => $time_left > 0 ? $time_left : 0,
-            'msg'        => Session::get('msg'),
+            'time_left' => $time_left > 0 ? $time_left : 0,
+            'msg' => $msg ?? null,
         ]);
     }
-
+    // Thêm sản phẩm vào giỏ
     public function add(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'mau_chon'   => 'required|string',
-        ]);
-
         $product = Product::findOrFail($request->product_id);
 
-        if ($product->so_luong_kho <= 0) {
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'San pham da het hang!'], 400);
-            }
-            return back()->with('error', 'San pham da het hang!');
-        }
+        // Lấy giỏ hàng hiện tại từ session
+        $cart = Session::get('cart', []);
 
-        $cart    = Session::get('cart', []);
-        $cartKey = $product->id . '_' . $request->mau_chon;
-
-        if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['so_luong'] += $request->so_luong ?? 1;
+        // Nếu sản phẩm đã có thì tăng số lượng
+        if (isset($cart[$product->id])) {
+            $cart[$product->id]['so_luong'] += $request->so_luong ?? 1;
         } else {
-            $cart[$cartKey] = [
-                'product_id'   => $product->id,
-                'ten_san_pham' => $product->name,
-                'gia'          => $product->price,
-                'so_luong'     => $request->so_luong ?? 1,
-                'mau_chon'     => $request->mau_chon,
-                'anh'          => $product->image_main ?? null,
+            // Nếu chưa có thì thêm mới
+            $cart[$product->id] = [
+                'product_id' => $product->id,
+                'ten_san_pham' => $product->ten_san_pham,
+                'gia' => $product->gia,
+                'so_luong' => $request->so_luong ?? 1,
+                'anh' => $product->anh ?? null, // nếu có ảnh sản phẩm
             ];
         }
 
+        // Lưu lại giỏ hàng
         Session::put('cart', $cart);
         Session::put('cart_open_time', time());
 
+        // Nếu là request AJAX thì trả JSON
         if ($request->ajax()) {
             return response()->json([
-                'success'    => true,
-                'message'    => 'San pham da duoc them vao gio hang!',
+                'success' => true,
+                'message' => 'Sản phẩm đã được thêm vào giỏ hàng!',
                 'cart_count' => count($cart),
             ]);
         }
 
-        return redirect()->route('cart.index')->with('msg', 'Da them san pham vao gio hang!');
+        // Nếu không phải AJAX
+        return redirect()->route('cart.index')->with('msg', 'Đã thêm sản phẩm vào giỏ hàng!');
     }
 
-    public function remove($key)
+    // Xoá sản phẩm khỏi giỏ
+    public function remove($id)
     {
         $cart = Session::get('cart', []);
-        if (isset($cart[$key])) {
-            unset($cart[$key]);
+
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
             Session::put('cart', $cart);
         }
-        return back()->with('msg', 'Da xoa san pham khoi gio hang!');
+
+        return back()->with('msg', 'Đã xoá sản phẩm khỏi giỏ hàng!');
     }
 
+
+    // Xác nhận đơn hàng
     public function checkout(Request $request)
     {
-        $request->validate([
-            'dia_chi' => 'required|string|max:500',
-        ]);
-
         $cart = Session::get('cart', []);
         if (empty($cart)) {
-            return redirect()->route('cart.index')->with('error', 'Gio hang rong!');
+            return redirect()->route('cart.index')->with('error', 'Giỏ hàng rỗng!');
         }
 
-        $user_id     = Auth::id();
+        $user_id = Auth::id();
+
+        // Lưu đơn hàng
         $don_hang_id = DB::table('don_hang')->insertGetId([
-            'user_id'  => $user_id,
-            'dia_chi'  => $request->dia_chi,
+            'user_id' => $user_id,
             'ngay_tao' => now(),
         ]);
 
+        // Lưu chi tiết đơn hàng
         foreach ($cart as $item) {
             DB::table('chi_tiet_don_hang')->insert([
-                'don_hang_id'       => $don_hang_id,
-                'product_id'        => $item['product_id'],
-                'so_luong'          => $item['so_luong'] ?? 1,
-                'mau_chon'          => $item['mau_chon'] ?? null,
-                'gia_tai_thoi_diem' => $item['gia'],
-                'ngay_tao'          => now(),
+                'don_hang_id' => $don_hang_id,
+                'product_id' => $item['product_id'],
+                'so_luong' => $item['so_luong'] ?? 1,
+                'ngay_tao' => now(),
             ]);
-            DB::table('products')
-                ->where('id', $item['product_id'])
-                ->decrement('so_luong_kho', $item['so_luong'] ?? 1);
         }
 
         Session::forget('cart');
         Session::forget('cart_open_time');
 
-        // Redirect sang trang don hang cua toi voi thong bao
-        return redirect()->route('user.orders')
-            ->with('success', 'Đặt hàng thành công! Đơn hàng #' . $don_hang_id . ' đã được ghi nhận. Nhân viên sẽ sớm liên hệ lại với bạn!');
-    }
-
-    public function myOrders()
-    {
-        $orders = \App\Models\DonHang::with(['chiTietDonHang.product'])
-            ->where('user_id', Auth::id())
-            ->latest('ngay_tao')
-            ->get();
-
-        return view('user.my-orders', compact('orders'));
+        return redirect()->route('home')->with('success', 'Đơn hàng đã được lưu!');
     }
 }
