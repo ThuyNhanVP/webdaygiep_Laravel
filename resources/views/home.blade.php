@@ -68,7 +68,7 @@
 
     <a href="{{ route('cart.index') }}"><button>GIỎ HÀNG</button></a>
 
-    <a href="{{ route('user.orders') }}"><button>MY ORDER</button></a>
+    <a href="{{ route('user.orders') }}"><button>ĐƠN HÀNG CỦA TÔI</button></a>
 
     <form action="{{ route('logout') }}" method="POST" style="display:inline;">
         @csrf
