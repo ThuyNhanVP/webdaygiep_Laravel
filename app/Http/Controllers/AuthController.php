@@ -49,7 +49,8 @@ class AuthController extends Controller
         $request->validate([
             'ho_ten'   => 'required|string|max:255',
             'username' => 'required|string|min:8|unique:users,username',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:6|confirmed',
+            'password_confirmation' => 'required|string|min:6',
             'phone'    => ['required', 'regex:/^0(3|5|7|8|9)[0-9]{8}$/'],
         ]);
 

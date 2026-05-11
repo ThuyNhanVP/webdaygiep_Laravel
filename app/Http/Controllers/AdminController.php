@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
+use App\Models\DonHang;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        $products = Product::all();
+        $products = Product::paginate(15);
         return view('admin.products', compact('products'));
     }
 
@@ -18,9 +19,14 @@ class AdminController extends Controller
     {
         $request->validate([
             'name'         => 'required|string|max:255',
-            'price'        => 'required|numeric|min:0',
+            'price'        => 'required|numeric|min:0|max:999999999',
             'image_main'   => 'required|string',
-            'so_luong_kho' => 'required|integer|min:0',
+            'so_luong_kho' => 'required|integer|min:0|max:999999',
+            'category'     => 'nullable|string|max:255',
+            'colors'       => 'nullable|string',
+            'mau_sac'      => 'nullable|string',
+            'tag'          => 'nullable|string|max:255',
+            'image_hover'  => 'nullable|string',
         ]);
 
         // Xu ly mau_sac thanh JSON array
@@ -48,7 +54,15 @@ class AdminController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'so_luong_kho' => 'required|integer|min:0',
+            'so_luong_kho' => 'required|integer|min:0|max:999999',
+            'name'         => 'nullable|string|max:255',
+            'price'        => 'nullable|numeric|min:0|max:999999999',
+            'category'     => 'nullable|string|max:255',
+            'colors'       => 'nullable|string',
+            'mau_sac'      => 'nullable|string',
+            'tag'          => 'nullable|string|max:255',
+            'image_main'   => 'nullable|string',
+            'image_hover'  => 'nullable|string',
         ]);
 
         $product = Product::findOrFail($id);
@@ -82,9 +96,9 @@ class AdminController extends Controller
 
     public function orders()
     {
-        $orders = \App\Models\DonHang::with(['chiTietDonHang.product', 'user'])
+        $orders = DonHang::with(['chiTietDonHang.product', 'user'])
             ->latest('ngay_tao')
-            ->get();
+            ->paginate(15);
         return view('admin.orders', compact('orders'));
     }
 }

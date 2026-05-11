@@ -25,4 +25,9 @@ class Product extends Model
     protected $casts = [
         'mau_sac' => 'array',
     ];
+
+    public function chiTietDonHang()
+    {
+        return $this->hasMany(ChiTietDonHang::class, 'product_id', 'id');
+    }
 }
