@@ -12,6 +12,20 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="mb-4 p-3 rounded-lg bg-red-100 text-red-700 font-medium">
+            @foreach($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 p-3 rounded-lg bg-red-100 text-red-700 font-medium">
+            {{ session('error') }}
+        </div>
+    @endif
+
     @forelse($products as $p)
         <div class="flex items-center justify-between border-b border-gray-200 py-4">
             <div class="flex items-center gap-4">
@@ -24,6 +38,11 @@
                     <p class="text-gray-500">{{ number_format($p->price,0,',','.') }} VND</p>
                     <p class="text-sm text-gray-600">Số lượng: 
                         <span class="font-semibold">{{ $p->so_luong }}</span>
+                    </p>
+                    <p class="text-sm text-gray-500">Còn lại: 
+                        <span class="font-semibold @if($p->quantity == 0) text-red-600 @elseif($p->quantity < 5) text-orange-600 @else text-green-600 @endif">
+                            {{ $p->quantity }}
+                        </span>
                     </p>
                 </div>
             </div>

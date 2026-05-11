@@ -8,6 +8,80 @@
         Đây là trang quản trị hệ thống giày dép. Bạn có thể quản lý sản phẩm và kiểm tra đơn hàng tại đây.
     </p>
 
+    <!-- Thống kê tồn kho -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Tổng sản phẩm -->
+        <div class="bg-white rounded-2xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Tổng sản phẩm</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ $total_products }}</h3>
+                </div>
+                <div class="w-12 h-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full">
+                    <i class="fas fa-boxes text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hàng hết -->
+        <div class="bg-white rounded-2xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Hàng hết (0)</p>
+                    <h3 class="text-2xl font-bold text-red-600">{{ $out_of_stock }}</h3>
+                </div>
+                <div class="w-12 h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full">
+                    <i class="fas fa-exclamation text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hàng sắp hết -->
+        <div class="bg-white rounded-2xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Hàng sắp hết</p>
+                    <h3 class="text-2xl font-bold text-orange-600">{{ count($low_stock_products) }}</h3>
+                </div>
+                <div class="w-12 h-12 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full">
+                    <i class="fas fa-triangle-exclamation text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cảnh báo sản phẩm hàng sắp hết -->
+    @if(count($low_stock_products) > 0)
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded mb-8">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-yellow-400 text-2xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-semibold text-yellow-800">⚠️ Cảnh báo tồn kho</h3>
+                <p class="text-yellow-700 text-sm mt-2">Các sản phẩm sau đây có số lượng tồn kho thấp:</p>
+                
+                <div class="mt-4 space-y-2">
+                    @foreach($low_stock_products as $product)
+                    <div class="bg-white p-3 rounded flex justify-between items-center">
+                        <div>
+                            <p class="font-semibold text-gray-800">{{ $product->name }}</p>
+                            <p class="text-sm text-gray-500">
+                                Tồn kho: <span class="font-bold text-red-600">{{ $product->quantity }}</span> 
+                                (Tối thiểu: {{ $product->quantity_min }})
+                            </p>
+                        </div>
+                        <a href="{{ route('admin.products') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
+                            Nhập thêm →
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Các mục quản trị -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <!-- Quản lý sản phẩm -->

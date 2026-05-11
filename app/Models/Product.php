@@ -14,7 +14,9 @@ class Product extends Model
         'colors',
         'tag',
         'image_main',
-        'image_hover'
+        'image_hover',
+        'quantity',
+        'quantity_min'
     ];
     public $timestamps = false; // nếu bảng không có created_at, updated_at
 
@@ -24,4 +26,23 @@ class Product extends Model
         return $this->hasMany(ChiTietDonHang::class, 'product_id', 'id');
     }
 
+    // Kiểm tra xem sản phẩm có đủ số lượng không
+    public function hasEnoughStock($quantity)
+    {
+        return $this->quantity >= $quantity;
+    }
+
+    // Trừ số lượng từ kho
+    public function decreaseStock($quantity)
+    {
+        $this->quantity -= $quantity;
+        return $this->save();
+    }
+
+    // Cộng số lượng vào kho (nếu order bị hủy)
+    public function increaseStock($quantity)
+    {
+        $this->quantity += $quantity;
+        return $this->save();
+    }
 }

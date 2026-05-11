@@ -22,6 +22,12 @@
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 <input type="text" name="image_hover" placeholder="Ảnh hover (URL)"
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" name="quantity" placeholder="Số lượng tồn kho" min="0" value="0"
+                        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <input type="number" name="quantity_min" placeholder="Số lượng tối thiểu" min="0" value="5"
+                        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
                 <button type="submit"
                     class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">
                     Thêm sản phẩm
@@ -37,10 +43,10 @@
                         <th class="px-6 py-3">Tên</th>
                         <th class="px-6 py-3">Giá</th>
                         <th class="px-6 py-3">Danh mục</th>
+                        <th class="px-6 py-3">Tồn kho</th>
+                        <th class="px-6 py-3">Tối thiểu</th>
                         <th class="px-6 py-3">Màu sắc</th>
                         <th class="px-6 py-3">Tag</th>
-                        <th class="px-6 py-3">Ảnh chính</th>
-                        <th class="px-6 py-3">Ảnh hover</th>
                         <th class="px-6 py-3 text-center">Hành động</th>
                     </tr>
                 </thead>
@@ -50,14 +56,14 @@
                             <td class="px-6 py-4 font-medium text-gray-800">{{ $sp->name }}</td>
                             <td class="px-6 py-4">{{ number_format($sp->price) }}</td>
                             <td class="px-6 py-4">{{ $sp->category }}</td>
+                            <td class="px-6 py-4">
+                                <span class="@if($sp->quantity == 0) bg-red-100 text-red-700 @elseif($sp->quantity <= $sp->quantity_min) bg-orange-100 text-orange-700 @else bg-green-100 text-green-700 @endif px-3 py-1 rounded-full font-semibold text-sm">
+                                    {{ $sp->quantity }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">{{ $sp->quantity_min }}</td>
                             <td class="px-6 py-4">{{ $sp->colors }}</td>
                             <td class="px-6 py-4">{{ $sp->tag }}</td>
-                            <td class="px-6 py-4">
-                                <img src="{{ asset($sp->image_main) }}" alt="Ảnh chính" class="w-16 h-16 object-cover rounded">
-                            </td>
-                            <td class="px-6 py-4">
-                                <img src="{{ asset($sp->image_hover) }}" alt="Ảnh hover" class="w-16 h-16 object-cover rounded">
-                            </td>
 
                             <td class="px-6 py-4 text-center space-y-2">
                                 <!-- Nút mở modal -->
@@ -69,7 +75,7 @@
                                 <!-- Modal cập nhật -->
                                 <div id="editModal-{{ $sp->id }}"
                                     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-                                    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+                                    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative max-h-96 overflow-y-auto">
                                         <!-- Nút đóng -->
                                         <button onclick="closeEditModal({{ $sp->id }})"
                                             class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">✖</button>
@@ -93,6 +99,12 @@
                                                 placeholder="Ảnh chính" class="w-full px-3 py-2 border rounded-md">
                                             <input type="text" name="image_hover" value="{{ $sp->image_hover }}"
                                                 placeholder="Ảnh hover" class="w-full px-3 py-2 border rounded-md">
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <input type="number" name="quantity" value="{{ $sp->quantity }}" placeholder="Tồn kho" min="0"
+                                                    class="px-3 py-2 border rounded-md">
+                                                <input type="number" name="quantity_min" value="{{ $sp->quantity_min }}" placeholder="Tối thiểu" min="0"
+                                                    class="px-3 py-2 border rounded-md">
+                                            </div>
 
                                             <button class="w-full py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
                                                 Cập nhật

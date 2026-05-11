@@ -46,20 +46,36 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $product = Product::findOrFail($request->product_id);
+        $so_luong_can_add = $request->so_luong ?? 1;
 
         // Lấy giỏ hàng hiện tại từ session
         $cart = Session::get('cart', []);
 
+        // Tính toán tổng số lượng sẽ có trong giỏ nếu thêm
+        $so_luong_trong_gio = isset($cart[$product->id]) ? $cart[$product->id]['so_luong'] : 0;
+        $tong_so_luong_sau_khi_them = $so_luong_trong_gio + $so_luong_can_add;
+
+        // Kiểm tra tồn kho
+        if (!$product->hasEnoughStock($tong_so_luong_sau_khi_them)) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Số lượng hàng không đủ! Hiện tại còn {$product->quantity} sản phẩm trong kho.",
+                ], 400);
+            }
+            return back()->with('error', "Số lượng hàng không đủ! Hiện tại còn {$product->quantity} sản phẩm trong kho.");
+        }
+
         // Nếu sản phẩm đã có thì tăng số lượng
         if (isset($cart[$product->id])) {
-            $cart[$product->id]['so_luong'] += $request->so_luong ?? 1;
+            $cart[$product->id]['so_luong'] += $so_luong_can_add;
         } else {
             // Nếu chưa có thì thêm mới
             $cart[$product->id] = [
                 'product_id' => $product->id,
                 'ten_san_pham' => $product->ten_san_pham,
                 'gia' => $product->gia,
-                'so_luong' => $request->so_luong ?? 1,
+                'so_luong' => $so_luong_can_add,
                 'anh' => $product->anh ?? null, // nếu có ảnh sản phẩm
             ];
         }
@@ -103,6 +119,16 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Giỏ hàng rỗng!');
         }
 
+        // Kiểm tra stock lần cuối cùng trước khi checkout
+        foreach ($cart as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            if (!$product->hasEnoughStock($item['so_luong'])) {
+                Session::forget('cart');
+                Session::forget('cart_open_time');
+                return redirect()->route('cart.index')->with('error', "Sản phẩm '{$product->name}' không đủ số lượng! Chỉ còn {$product->quantity} sản phẩm.");
+            }
+        }
+
         $user_id = Auth::id();
 
         // Lưu đơn hàng
@@ -111,7 +137,7 @@ class CartController extends Controller
             'ngay_tao' => now(),
         ]);
 
-        // Lưu chi tiết đơn hàng
+        // Lưu chi tiết đơn hàng và trừ stock
         foreach ($cart as $item) {
             DB::table('chi_tiet_don_hang')->insert([
                 'don_hang_id' => $don_hang_id,
@@ -119,6 +145,10 @@ class CartController extends Controller
                 'so_luong' => $item['so_luong'] ?? 1,
                 'ngay_tao' => now(),
             ]);
+
+            // Trừ số lượng từ kho
+            $product = Product::findOrFail($item['product_id']);
+            $product->decreaseStock($item['so_luong']);
         }
 
         Session::forget('cart');
