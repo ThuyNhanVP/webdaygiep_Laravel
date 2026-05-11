@@ -1,155 +1,155 @@
 @extends('layouts.app')
+@section('title', 'Quan ly san pham')
 
 @section('content')
-    <div class="max-w-6xl mx-auto px-4 py-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Quản lý sản phẩm</h2>
+<div style="max-width:1100px;margin:40px auto;padding:0 16px;">
 
-        <!-- Form thêm sản phẩm -->
-        <div class="bg-white shadow rounded-2xl p-6 mb-8">
-            <form action="{{ route('admin.products.store') }}" method="POST" class="space-y-4">
-                @csrf
-                <input type="text" name="name" placeholder="Tên sản phẩm"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="number" name="price" placeholder="Giá"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="text" name="category" placeholder="Danh mục"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="text" name="colors" placeholder="Màu sắc"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="text" name="tag" placeholder="Tag"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="text" name="image_main" placeholder="Ảnh chính (URL)"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="text" name="image_hover" placeholder="Ảnh hover (URL)"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" name="quantity" placeholder="Số lượng tồn kho" min="0" value="0"
-                        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <input type="number" name="quantity_min" placeholder="Số lượng tối thiểu" min="0" value="5"
-                        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <button type="submit"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">
-                    Thêm sản phẩm
-                </button>
-            </form>
-        </div>
-
-        <!-- Danh sách sản phẩm -->
-        <div class="overflow-hidden bg-white shadow rounded-2xl">
-            <table class="w-full text-sm text-left text-gray-600">
-                <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
-                    <tr>
-                        <th class="px-6 py-3">Tên</th>
-                        <th class="px-6 py-3">Giá</th>
-                        <th class="px-6 py-3">Danh mục</th>
-                        <th class="px-6 py-3">Tồn kho</th>
-                        <th class="px-6 py-3">Tối thiểu</th>
-                        <th class="px-6 py-3">Màu sắc</th>
-                        <th class="px-6 py-3">Tag</th>
-                        <th class="px-6 py-3 text-center">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($products as $sp)
-                        <tr class="border-b hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium text-gray-800">{{ $sp->name }}</td>
-                            <td class="px-6 py-4">{{ number_format($sp->price) }}</td>
-                            <td class="px-6 py-4">{{ $sp->category }}</td>
-                            <td class="px-6 py-4">
-                                <span class="@if($sp->quantity == 0) bg-red-100 text-red-700 @elseif($sp->quantity <= $sp->quantity_min) bg-orange-100 text-orange-700 @else bg-green-100 text-green-700 @endif px-3 py-1 rounded-full font-semibold text-sm">
-                                    {{ $sp->quantity }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">{{ $sp->quantity_min }}</td>
-                            <td class="px-6 py-4">{{ $sp->colors }}</td>
-                            <td class="px-6 py-4">{{ $sp->tag }}</td>
-
-                            <td class="px-6 py-4 text-center space-y-2">
-                                <!-- Nút mở modal -->
-                                <button onclick="openEditModal({{ $sp->id }})"
-                                    class="w-full px-3 py-1 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    Cập nhật
-                                </button>
-
-                                <!-- Modal cập nhật -->
-                                <div id="editModal-{{ $sp->id }}"
-                                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-                                    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative max-h-96 overflow-y-auto">
-                                        <!-- Nút đóng -->
-                                        <button onclick="closeEditModal({{ $sp->id }})"
-                                            class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">✖</button>
-
-                                        <h2 class="text-lg font-bold mb-4">Chỉnh sửa sản phẩm</h2>
-
-                                        <form action="{{ route('admin.products.update', $sp->id) }}" method="POST"
-                                            class="space-y-3">
-                                            @csrf
-                                            <input type="text" name="name" value="{{ $sp->name }}" placeholder="Tên sản phẩm"
-                                                class="w-full px-3 py-2 border rounded-md">
-                                            <input type="number" name="price" value="{{ $sp->price }}" placeholder="Giá"
-                                                class="w-full px-3 py-2 border rounded-md">
-                                            <input type="text" name="category" value="{{ $sp->category }}"
-                                                placeholder="Danh mục" class="w-full px-3 py-2 border rounded-md">
-                                            <input type="text" name="colors" value="{{ $sp->colors }}" placeholder="Màu sắc"
-                                                class="w-full px-3 py-2 border rounded-md">
-                                            <input type="text" name="tag" value="{{ $sp->tag }}" placeholder="Tag"
-                                                class="w-full px-3 py-2 border rounded-md">
-                                            <input type="text" name="image_main" value="{{ $sp->image_main }}"
-                                                placeholder="Ảnh chính" class="w-full px-3 py-2 border rounded-md">
-                                            <input type="text" name="image_hover" value="{{ $sp->image_hover }}"
-                                                placeholder="Ảnh hover" class="w-full px-3 py-2 border rounded-md">
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <input type="number" name="quantity" value="{{ $sp->quantity }}" placeholder="Tồn kho" min="0"
-                                                    class="px-3 py-2 border rounded-md">
-                                                <input type="number" name="quantity_min" value="{{ $sp->quantity_min }}" placeholder="Tối thiểu" min="0"
-                                                    class="px-3 py-2 border rounded-md">
-                                            </div>
-
-                                            <button class="w-full py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
-                                                Cập nhật
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                <!-- Xóa -->
-                                <form action="{{ route('admin.products.delete', $sp->id) }}" method="POST" class="inline"
-                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button
-                                        class="w-full px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition">
-                                        Xóa
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-400 text-base">
-                                Không có sản phẩm nào
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt-6">
-            <a href="{{ route('admin.dashboard') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition">
-                ← Quay lại
-            </a>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <h2 style="font-size:1.5rem;font-weight:700;">Quản lý sản phẩm</h2>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ route('admin.orders') }}" style="background:#2563eb;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:0.875rem;">Xem đơn hàng</a>
+            <a href="{{ route('home') }}" style="background:#6b7280;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:0.875rem;">← Trang chủ</a>
         </div>
     </div>
 
-    <script>
-        function openEditModal(id) {
-            document.getElementById('editModal-' + id).classList.remove('hidden');
-        }
-        function closeEditModal(id) {
-            document.getElementById('editModal-' + id).classList.add('hidden');
-        }
-    </script>
+    @if(session('success'))
+        <div style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:12px 16px;border-radius:6px;margin-bottom:20px;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Form them san pham --}}
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:24px;margin-bottom:32px;">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">Thêm sản phẩm mới</h3>
+        <form method="POST" action="{{ route('admin.products.store') }}">
+            @csrf
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Tên sản phẩm *</label>
+                    <input type="text" name="name" required placeholder="VD: Giày Samba OG"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Giá (VND) *</label>
+                    <input type="number" name="price" required min="0" placeholder="VD: 2700000"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Danh mục</label>
+                    <input type="text" name="category" placeholder="VD: Originals"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">
+                        Số lượng trong kho *
+                    </label>
+                    <input type="number" name="so_luong_kho" required min="0" value="0" placeholder="VD: 10"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">
+                        Danh sách màu <span style="font-weight:400;color:#6b7280;">(cách nhau bằng dấu phẩy)</span>
+                    </label>
+                    <input type="text" name="mau_sac" placeholder="VD: Trắng,Đen,Xanh navy"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Colors (hiển thị)</label>
+                    <input type="text" name="colors" placeholder="VD: 2 colours"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Tag</label>
+                    <input type="text" name="tag" placeholder="VD: Mới, Trending"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Ảnh chính *</label>
+                    <input type="text" name="image_main" required placeholder="VD: img/1.png"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.875rem;font-weight:600;margin-bottom:4px;">Ảnh hover</label>
+                    <input type="text" name="image_hover" placeholder="VD: img/1,1.avif"
+                           style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;">
+                </div>
+            </div>
+            <button type="submit" style="margin-top:16px;background:#222;color:#fff;padding:10px 28px;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;">
+                + Thêm sản phẩm
+            </button>
+        </form>
+    </div>
+
+    {{-- Danh sach san pham --}}
+    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <thead style="background:#f9fafb;">
+            <tr>
+                <th style="padding:12px 16px;text-align:left;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Ảnh</th>
+                <th style="padding:12px 16px;text-align:left;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Tên</th>
+                <th style="padding:12px 16px;text-align:left;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Giá</th>
+                <th style="padding:12px 16px;text-align:center;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Tồn kho</th>
+                <th style="padding:12px 16px;text-align:left;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Màu sắc</th>
+                <th style="padding:12px 16px;text-align:left;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Tag</th>
+                <th style="padding:12px 16px;text-align:center;font-size:0.875rem;border-bottom:1px solid #e5e7eb;">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+        @forelse($products as $p)
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:10px 16px;">
+                    <img src="{{ asset($p->image_main) }}" alt="{{ $p->name }}"
+                         style="width:56px;height:56px;object-fit:cover;border-radius:4px;background:#f3f4f6;">
+                </td>
+                <td style="padding:10px 16px;font-weight:500;">{{ $p->name }}</td>
+                <td style="padding:10px 16px;">{{ number_format($p->price,0,',','.') }} VND</td>
+                <td style="padding:10px 16px;text-align:center;">
+                    @if($p->so_luong_kho <= 0)
+                        <span style="background:#fee2e2;color:#dc2626;padding:2px 10px;border-radius:99px;font-size:0.8rem;font-weight:600;">Hết hàng</span>
+                    @elseif($p->so_luong_kho <= 3)
+                        <span style="background:#fef3c7;color:#d97706;padding:2px 10px;border-radius:99px;font-size:0.8rem;font-weight:600;">{{ $p->so_luong_kho }} (sắp hết)</span>
+                    @else
+                        <span style="background:#d1fae5;color:#059669;padding:2px 10px;border-radius:99px;font-size:0.8rem;font-weight:600;">{{ $p->so_luong_kho }}</span>
+                    @endif
+                </td>
+                <td style="padding:10px 16px;font-size:0.875rem;color:#6b7280;">
+                    @php $mauList = is_array($p->mau_sac) ? $p->mau_sac : (json_decode($p->mau_sac,true) ?? []); @endphp
+                    {{ implode(', ', $mauList) }}
+                </td>
+                <td style="padding:10px 16px;">{{ $p->tag ?? '—' }}</td>
+                <td style="padding:10px 16px;text-align:center;">
+                    {{-- Nut cap nhat ton kho nhanh --}}
+                    <form method="POST" action="{{ route('admin.products.update', $p->id) }}" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:4px;">
+                        @csrf
+                        <input type="hidden" name="name" value="{{ $p->name }}">
+                        <input type="hidden" name="price" value="{{ $p->price }}">
+                        <input type="hidden" name="category" value="{{ $p->category }}">
+                        <input type="hidden" name="colors" value="{{ $p->colors }}">
+                        <input type="hidden" name="mau_sac" value="{{ implode(',', $mauList) }}">
+                        <input type="hidden" name="tag" value="{{ $p->tag }}">
+                        <input type="hidden" name="image_main" value="{{ $p->image_main }}">
+                        <input type="hidden" name="image_hover" value="{{ $p->image_hover }}">
+                        <input type="number" name="so_luong_kho" value="{{ $p->so_luong_kho }}" min="0"
+                               style="width:60px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;text-align:center;">
+                        <button type="submit"
+                                style="background:#2563eb;color:#fff;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;white-space:nowrap;">
+                            Cập nhật
+                        </button>
+                    </form>
+                    <br>
+                    <form method="POST" action="{{ route('admin.products.delete', $p->id) }}" style="display:inline;"
+                          onsubmit="return confirm('Xóa sản phẩm này?')">
+                        @csrf @method('DELETE')
+                        <button type="submit"
+                                style="background:#ef4444;color:#fff;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;">
+                            Xóa
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        @empty
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;">Chưa có sản phẩm nào.</td></tr>
+        @endforelse
+        </tbody>
+    </table>
+</div>
 @endsection

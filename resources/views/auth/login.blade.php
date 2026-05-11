@@ -33,34 +33,9 @@
             <button type="submit" class="submit">Đăng nhập</button>
         </div>
 
-        <div id="result" style="margin-top:10px;color:red;"></div>
+        @if($errors->any())
+            <div style="margin-top:10px;color:red;">{{ $errors->first() }}</div>
+        @endif
     </form>
-
-    <script>
-    document.getElementById('form_dang_nhap').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const form = e.target;
-        const data = {
-            username: form.username.value,
-            password: form.password.value,
-            _token: form.querySelector('input[name="_token"]').value
-        };
-
-        const res = await fetch(form.action, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-        document.getElementById('result').textContent = result.message;
-        if (result.success) {
-            document.getElementById('result').style.color = 'green';
-            setTimeout(() => window.location.href = "{{ route('home') }}", 1000);
-        } else {
-            document.getElementById('result').style.color = 'red';
-        }
-    });
-    </script>
 </body>
 </html>
