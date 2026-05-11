@@ -6,14 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class ChiTietDonHang extends Model
 {
-    protected $table = 'chi_tiet_don_hang'; // tên bảng trong DB
-    public $timestamps = false; // nếu bảng không có created_at, updated_at
+    protected $table = 'chi_tiet_don_hang';
+    public $timestamps = false;
 
     protected $fillable = [
         'don_hang_id',
         'product_id',
         'so_luong',
-        'ngay_tao'
+        'mau_chon',
+        'gia_tai_thoi_diem',
+        'ngay_tao',
     ];
 
     public function donHang()

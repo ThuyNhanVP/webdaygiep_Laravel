@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Foundation\Configuration\Exceptions;
-use App\Http\Middleware\IsAdmin; 
+use Illuminate\Foundation\Configuration\Middleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,12 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // alias middleware
         $middleware->alias([
-            'is_admin' => IsAdmin::class,
+            'admin'    => \App\Http\Middleware\IsAdmin::class,
+            'is_admin' => \App\Http\Middleware\IsAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })
-    ->create();
+    })->create();
