@@ -58,51 +58,94 @@
 
     <div class="boxlogin">
         @auth
-            <span style="margin-right: 10px; margin-top: 6px; font-weight: bold; color: green;">
-                Xin chào, {{ Auth::user()->ho_ten }}
-            </span>
-            @if(Auth::user()->role === 'admin')
-                <a href="{{ route('admin.dashboard') }}"><button>QUẢN TRỊ</button></a>
-            @endif
-            <a href="{{ route('cart.index') }}"><button>GIỎ HÀNG</button></a>
-            <form action="{{ route('logout') }}" method="POST" style="display:inline;">
-                @csrf
-                <button type="submit">ĐĂNG XUẤT</button>
-            </form>
-        @else
-            <a href="{{ route('login') }}"><button>LOGIN</button></a>
-            <a href="{{ route('cart.index') }}"><button>GIỎ HÀNG</button></a>
-        @endauth
+    <span style="margin-right: 10px; margin-top: 6px; font-weight: bold; color: green;">
+        Xin chào, {{ Auth::user()->ho_ten }}
+    </span>
+
+    @if(Auth::user()->role === 'admin')
+        <a href="{{ route('admin.dashboard') }}"><button>QUẢN TRỊ</button></a>
+    @endif
+
+    <a href="{{ route('cart.index') }}"><button>GIỎ HÀNG</button></a>
+
+    <a href="{{ route('user.orders') }}"><button>MY ORDER</button></a>
+
+    <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+        @csrf
+        <button type="submit">ĐĂNG XUẤT</button>
+    </form>
+@endauth
     </div>
 
     <div class="product">
-        @foreach($products as $row)
-            <div class="subproduct">
-                <div class="imgproduct">
-                    <img src="{{ asset($row->image_main) }}" @if(!empty($row->image_hover))
-                    data-hover="{{ asset($row->image_hover) }}" @endif alt="">
+    @foreach($products as $row)
+        <div class="subproduct">
+
+            {{-- Badge het hang / sap het --}}
+            @if($row->so_luong_kho <= 0)
+                <div style="position:absolute;top:10px;left:10px;background:#e74c3c;color:#fff;padding:4px 10px;border-radius:4px;font-size:0.8rem;font-weight:700;z-index:2;">
+                    HẾT HÀNG
                 </div>
-                <div class="detail">
-                    <p>{{ number_format($row->price, 0, ',', '.') }} VND</p>
-                    <p>{{ $row->name }}</p>
-                    <p>{{ $row->category }}</p>
-                    @if(!empty($row->colors))
-                        <p>{{ $row->colors }}</p>
-                    @endif
-                    @if(!empty($row->tag))
-                        <p style="font-weight: bold; display: inline; margin-right: 70px;">{{ $row->tag }}</p>
-                    @endif
-                    <form method="POST" action="{{ route('cart.add') }}" class="add-to-cart-form" style="display: inline;">
+            @elseif($row->so_luong_kho <= 3)
+                <div style="position:absolute;top:10px;left:10px;background:#f39c12;color:#fff;padding:4px 10px;border-radius:4px;font-size:0.8rem;font-weight:700;z-index:2;">
+                    SẮP HẾT (còn {{ $row->so_luong_kho }})
+                </div>
+            @endif
+
+            <div class="imgproduct" style="{{ $row->so_luong_kho <= 0 ? 'opacity:0.5;' : '' }}">
+                <img src="{{ asset($row->image_main) }}"
+                     @if(!empty($row->image_hover)) data-hover="{{ asset($row->image_hover) }}" @endif
+                     alt="{{ $row->name }}">
+            </div>
+
+            <div class="detail">
+                <p>{{ number_format($row->price, 0, ',', '.') }} VND</p>
+                <p>{{ $row->name }}</p>
+                <p>{{ $row->category }}</p>
+                @if(!empty($row->colors))
+                    <p>{{ $row->colors }}</p>
+                @endif
+                @if(!empty($row->tag))
+                    <p><strong>{{ $row->tag }}</strong></p>
+                @endif
+
+                @if($row->so_luong_kho > 0)
+                    <form method="POST" action="{{ route('cart.add') }}" class="add-to-cart-form">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $row->id }}">
                         <input type="hidden" name="so_luong" value="1">
-                        <button type="submit">Thêm vào giỏ hàng</button>
-                    </form>
 
-                </div>
+                        {{-- Select + button nam cung hang trong .btn-row --}}
+                        <div class="btn-row">
+                            @php
+                                $mauList = is_array($row->mau_sac)
+                                    ? $row->mau_sac
+                                    : (json_decode($row->mau_sac, true) ?? []);
+                            @endphp
+                            @if(count($mauList) >= 2)
+                                <select name="mau_chon" required>
+                                    <option value="">-- Chọn màu --</option>
+                                    @foreach($mauList as $mau)
+                                        <option value="{{ $mau }}">{{ $mau }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="hidden" name="mau_chon" value="{{ $mauList[0] ?? 'Mặc định' }}">
+                            @endif
+                            <button type="submit" class="btn-cart">Thêm vào giỏ hàng</button>
+                        </div>
+                    </form>
+                @else
+                    <div class="btn-row">
+                        <button disabled>Hết hàng</button>
+                    </div>
+                @endif
             </div>
-        @endforeach
-    </div>
+
+        </div>
+    @endforeach
+</div>
+
 
     <footer
         style="width:100%;background:#222;color:#fff;padding:10px 0 20px 0;position:relative;left:0;bottom:0; margin-top: 100px;">
